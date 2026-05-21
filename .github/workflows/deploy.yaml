@@ -41,10 +41,11 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Overwrite manifests on the server to ensure they are synchronized with the codebase
-          sudo mkdir -p k8s
+          # Create k8s folder if it does not exist
+          mkdir -p k8s
           
-                    cat << 'EOF' > k8s/deployment.yaml
+          # Overwrite the deployment file with the correct, absolute ECR image URL
+          cat << 'EOF' > k8s/deployment.yaml
           apiVersion: apps/v1
           kind: Deployment
           metadata:
@@ -79,9 +80,8 @@ jobs:
                     periodSeconds: 10
           EOF
           
-          # Apply the latest manifests directly inside the EC2 cluster environment
-          sudo kubectl apply -f k8s/deployment.yaml --validate=false
-          sudo kubectl apply -f k8s/service.yaml --validate=false
+          # Apply the corrected manifest using the proper K3s binary command
+          sudo k3s kubectl apply -f k8s/deployment.yaml
           
-          # Explicitly force Kubernetes pods to cycle and pull the newly uploaded container build
-          sudo kubectl rollout restart deployment cloudtasker-app
+          # Force the cluster to instantly pull the new build image out of ECR
+          sudo k3s kubectl rollout restart deployment cloudtasker-app
