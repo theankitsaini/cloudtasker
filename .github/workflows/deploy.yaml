@@ -1,0 +1,87 @@
+name: Deploy to K3s
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: cloudtasker
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Deploy to EC2 K3s
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Overwrite manifests on the server to ensure they are synchronized with the codebase
+          sudo mkdir -p k8s
+          
+                    cat << 'EOF' > k8s/deployment.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: cloudtasker-app
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: cloudtasker
+            template:
+              metadata:
+                labels:
+                  app: cloudtasker
+              spec:
+                containers:
+                - name: cloudtasker
+                  image: ://amazonaws.com
+                  ports:
+                  - containerPort: 5000
+                  imagePullPolicy: Always
+                  livenessProbe:
+                    httpGet:
+                      path: /health
+                      port: 5000
+                    initialDelaySeconds: 15
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: 5000
+                    initialDelaySeconds: 15
+                    periodSeconds: 10
+          EOF
+          
+          # Apply the latest manifests directly inside the EC2 cluster environment
+          sudo kubectl apply -f k8s/deployment.yaml --validate=false
+          sudo kubectl apply -f k8s/service.yaml --validate=false
+          
+          # Explicitly force Kubernetes pods to cycle and pull the newly uploaded container build
+          sudo kubectl rollout restart deployment cloudtasker-app
