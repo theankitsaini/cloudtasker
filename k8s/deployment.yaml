@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: cloudtasker-app
 spec:
-  replicas: 2  # Runs 2 copies for reliability
+  replicas: 2
   selector:
     matchLabels:
       app: cloudtasker
@@ -14,11 +14,10 @@ spec:
     spec:
       containers:
       - name: cloudtasker
-        image:         image: ://amazonaws.com
+        image: ://amazonaws.com
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
-        # --- ADD THIS ADVANCED MONITORING ---
         livenessProbe:
           httpGet:
             path: /health
@@ -31,4 +30,3 @@ spec:
             port: 5000
           initialDelaySeconds: 15
           periodSeconds: 10
-
