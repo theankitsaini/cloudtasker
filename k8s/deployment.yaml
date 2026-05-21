@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: cloudtasker
-        image: <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>://
+        image:         image: ://amazonaws.com
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
