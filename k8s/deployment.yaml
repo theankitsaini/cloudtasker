@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudtasker-app
+spec:
+  replicas: 2  # Runs 2 copies for reliability
+  selector:
+    matchLabels:
+      app: cloudtasker
+  template:
+    metadata:
+      labels:
+        app: cloudtasker
+    spec:
+      containers:
+      - name: cloudtasker
+        image: <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>://
+        ports:
+        - containerPort: 5000
+        imagePullPolicy: Always
+        # --- ADD THIS ADVANCED MONITORING ---
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
