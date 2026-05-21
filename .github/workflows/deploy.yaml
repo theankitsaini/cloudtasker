@@ -44,7 +44,7 @@ jobs:
           # Create k8s folder if it does not exist
           mkdir -p k8s
           
-          # Overwrite the deployment file with the correct, absolute ECR image URL
+          # Overwrite the deployment file with the exact, absolute ECR image URL format
           cat << 'EOF' > k8s/deployment.yaml
           apiVersion: apps/v1
           kind: Deployment
@@ -80,8 +80,8 @@ jobs:
                     periodSeconds: 10
           EOF
           
-          # Apply the corrected manifest using the proper K3s binary command
+          # Apply the corrected manifest using the proper K3s binary command execution
           sudo k3s kubectl apply -f k8s/deployment.yaml
           
-          # Force the cluster to instantly pull the new build image out of ECR
+          # Force the cluster to instantly pull the fresh build image out of ECR
           sudo k3s kubectl rollout restart deployment cloudtasker-app
