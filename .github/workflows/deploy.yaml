@@ -60,7 +60,7 @@ jobs:
               spec:
                 containers:
                 - name: cloudtasker
-                  image: ://amazonaws.com
+                  image: "808715035319.dkr.ecr.eu-west-1.amazonaws.com/cloudtasker:latest"
                   ports:
                   - containerPort: 5000
                   imagePullPolicy: Always
