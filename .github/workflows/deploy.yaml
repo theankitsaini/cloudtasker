@@ -34,14 +34,6 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-        
-    # This step will intentionally fail the workflow without breaking the syntax
-    - name: Force Workflow Failure
-      run: |
-        echo "Intentional failure triggered."
-        exit 1
-
-        
     - name: Deploy to EC2 K3s
       uses: appleboy/ssh-action@master
       with:
