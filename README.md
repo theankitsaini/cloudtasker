@@ -47,7 +47,7 @@ Instead of blowing my budget or AWS credits on an expensive managed service like
 
 Standard **AWS EKS** runs a bill of about **\$72/month** just to keep the control plane running, which would burn through free credits in weeks. 
 
-To bypass this, I chose **K3s** by Rancher. K3s strips out heavy cloud-provider-specific add-ons from standard Kubernetes, drastically lowering the memory footprint. This allowed me to pack a fully operational Kubernetes master and worker node onto a single **t2.micro (1 vCPU, 1GB RAM)** instance without hitting performance bottlenecks, keeping the entire cluster 100% Free Tier compliant.
+To bypass this, I chose **K3s** by Rancher. K3s strips out heavy cloud-provider-specific add-ons from standard Kubernetes, drastically lowering the memory footprint. This allowed me to pack a fully operational Kubernetes master and worker node onto a single **t3.micro (1 vCPU, 1GB RAM)** instance without hitting performance bottlenecks, keeping the entire cluster 100% Free Tier compliant.
 
 ---
 
